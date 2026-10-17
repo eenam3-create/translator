@@ -70,39 +70,50 @@
         speedVal.innerText = parseFloat(speedSlider.value).toFixed(1) + 'x';
     });
 
-    // Complete Cloud Translation Engine
+    // Production Cloud Translation Fetch Request
     btnTranslate.addEventListener('click', async () => {
         const text = frenchText.value.trim();
         if (!text) { statusText.innerText = "Please enter text."; return; }
-        statusText.innerText = "Translating entire text with Cloud Engine...";
+        statusText.innerText = "Connecting to server...";
         
         try {
-            // Using a high-performance open-source cloud api routing framework
-            const response = await fetch("https://argosopentech.com", {
-                method: "POST",
-                body: JSON.stringify({
-                    q: text,
-                    source: "fr",
-                    target: "en",
-                    format: "text"
-                }),
-                headers: { "Content-Type": "application/json" }
-            });
-
+            // Accessing the MyMemory Public Web API
+            const response = await fetch(`https://translated.net{encodeURIComponent(text)}&langpair=fr|en`);
             const data = await response.json();
-            if (data && data.translatedText) {
-                englishText.value = data.translatedText;
+            
+            if (data && data.responseData && data.responseData.translatedText) {
+                englishText.value = data.responseData.translatedText;
                 statusText.innerText = "Translation Complete!";
             } else {
-                statusText.innerText = "Server busy. Please try again.";
+                statusText.innerText = "Translation server busy. Trying alternate router...";
+                fallbackTranslate(text);
             }
         } catch (e) {
-            statusText.innerText = "Security Error: Local file browser block. Please upload to GitHub Pages to run.";
-            englishText.value = "To fix this, look at the GitHub instructions below.";
+            fallbackTranslate(text);
         }
     });
 
-    /* --- PRONUNCIATION CONTROLS --- */
+    // Secondary automatic backup translator fallback
+    async function fallbackTranslate(text) {
+        try {
+            const response = await fetch("https://argosopentech.com", {
+                method: "POST",
+                body: JSON.stringify({ q: text, source: "fr", target: "en", format: "text" }),
+                headers: { "Content-Type": "application/json" }
+            });
+            const data = await response.json();
+            if (data && data.translatedText) {
+                englishText.value = data.translatedText;
+                statusText.innerText = "Translation Complete! (via backup)";
+            } else {
+                statusText.innerText = "All translation systems busy. Try again in a moment.";
+            }
+        } catch (err) {
+            statusText.innerText = "Connection error. Make sure your internet connection is active.";
+        }
+    }
+
+    /* --- AUDIO PRONUNCIATION ENGINE --- */
     btnSpeak.addEventListener('click', () => {
         const text = frenchText.value.trim();
         if (!text) return;
