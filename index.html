@@ -71,27 +71,48 @@
         speedVal.innerText = parseFloat(speedSlider.value).toFixed(1) + 'x';
     });
 
-    // Uses Google's open endpoint which doesn't block GitHub traffic
     btnTranslate.addEventListener('click', function() {
         const text = frenchText.value.trim();
         if (!text) { statusText.innerText = "Please enter some text."; return; }
         
         statusText.innerText = "Translating...";
+        statusText.style.color = "#2f855a";
         
-        // Creating a dynamic script element to request the data securely without blocks
+        // Remove older script instances to prevent memory piling
+        const priorScript = document.getElementById('engine-call');
+        if (priorScript) priorScript.remove();
+        
         const script = document.createElement('script');
+        script.id = 'engine-call';
+        
+        // Flatten incoming nested array structures to extract data safely
         window.googleTranslateCallback = function(data) {
-            if (data && data[0]) {
-                let completeTranslation = "";
-                data[0].forEach(function(sentence) {
-                    if (sentence[0]) {
-                        completeTranslation += sentence[0];
+            try {
+                if (data && data[0]) {
+                    let completeTranslation = "";
+                    
+                    // Direct loop across response blocks
+                    for (let i = 0; i < data[0].length; i++) {
+                        if (data[0][i] && data[0][i][0]) {
+                            completeTranslation += data[0][i][0];
+                        }
                     }
-                });
-                englishText.value = completeTranslation;
-                statusText.innerText = "Translation Complete!";
-            } else {
-                statusText.innerText = "Translation parsing error.";
+                    
+                    if (completeTranslation) {
+                        englishText.value = completeTranslation;
+                        statusText.innerText = "Translation Complete!";
+                    } else {
+                        statusText.innerText = "Error matching data structures.";
+                        statusText.style.color = "#c53030";
+                    }
+                } else {
+                    statusText.innerText = "Response array structure missing.";
+                    statusText.style.color = "#c53030";
+                }
+            } catch (err) {
+                console.error(err);
+                statusText.innerText = "Data parsing exception structural error.";
+                statusText.style.color = "#c53030";
             }
             script.remove();
         };
@@ -100,7 +121,7 @@
         document.body.appendChild(script);
     });
 
-    /* --- PRONUNCIATION --- */
+    /* --- AUDIO ENGINE --- */
     btnSpeak.addEventListener('click', () => {
         const text = frenchText.value.trim();
         if (!text) return;
