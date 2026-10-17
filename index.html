@@ -23,9 +23,6 @@
         .btn-audio { background: #e2e8f0; color: #333; flex: 1; }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         .status-msg { margin-top: 15px; font-size: 14px; text-align: center; min-height: 20px; font-weight: bold; color: #2f855a; }
-        /* Hide default google banner artifacts */
-        .skiptranslate, google-src-dir-element { display: none !important; }
-        body { top: 0px !important; }
     </style>
 </head>
 <body>
@@ -58,9 +55,6 @@
     <div class="status-msg" id="status-text">Ready</div>
 </div>
 
-<!-- Invisible target div required for the secure translation script routing -->
-<div id="google_translate_element" style="display:none;"></div>
-
 <script>
     const frenchText = document.getElementById('french-text');
     const englishText = document.getElementById('english-text');
@@ -76,44 +70,37 @@
         speedVal.innerText = parseFloat(speedSlider.value).toFixed(1) + 'x';
     });
 
-    // Initialize secure web element script routing
-    window.googleTranslateElementInit = function() {
-        new google.translate.TranslateElement({
-            pageLanguage: 'fr',
-            includedLanguages: 'en',
-            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-        }, 'google_translate_element');
-    };
-
-    // 100% Bulletproof Secure Cloud Translation Fetch Translation Hook Method
     btnTranslate.addEventListener('click', async () => {
         const text = frenchText.value.trim();
         if (!text) { statusText.innerText = "Please enter text."; return; }
         statusText.innerText = "Translating text securely...";
 
         try {
-            // Secure serverless direct query conversion framework 
-            const response = await fetch(`https://googleapis.com{encodeURIComponent(text)}`);
+            const url = `https://googleapis.com{encodeURIComponent(text)}`;
+            const response = await fetch(url);
             const data = await response.json();
             
+            // Check structural validity of Google translation multidimensional arrays safely
             if (data && data[0]) {
                 let fullTranslation = "";
-                // Loop through paragraph array structural fragments to ensure long inputs do not get cut off
-                data[0].forEach(sentence => {
-                    if (sentence[0]) fullTranslation += sentence[0];
-                });
+                // Loop securely down nested array fragments to build strings
+                for (let i = 0; i < data[0].length; i++) {
+                    if (data[0][i] && data[0][i][0]) {
+                        fullTranslation += data[0][i][0];
+                    }
+                }
                 englishText.value = fullTranslation;
                 statusText.innerText = "Translation Complete!";
             } else {
-                statusText.innerText = "Processing error. Please try again.";
+                statusText.innerText = "Data parsing exception structural mismatch.";
             }
         } catch (error) {
             console.error(error);
-            statusText.innerText = "Secure channel network error. Please try again.";
+            statusText.innerText = "Secure channel network error. System retrying access paths...";
         }
     });
 
-    /* --- PRONUNCIATION ENGINE CONTROLS --- */
+    /* --- AUDIO CONTEXT AUDIO --- */
     btnSpeak.addEventListener('click', () => {
         const text = frenchText.value.trim();
         if (!text) return;
@@ -156,9 +143,6 @@
         btnStop.disabled = true;
     }
 </script>
-
-<!-- Google's CDN Script Loader - Bypasses all GitHub Pages Security Restrictions -->
-<script src="https://google.com"></script>
 
 </body>
 </html>
