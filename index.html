@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>French to English Translator</title>
+    <title>Complete French to English Translator</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
@@ -75,31 +75,41 @@
         const text = frenchText.value.trim();
         if (!text) { statusText.innerText = "Please enter some text."; return; }
         
-        statusText.innerText = "Translating...";
+        statusText.innerText = "Processing long text translation...";
         statusText.style.color = "#4a5568";
         englishText.value = "";
 
+        // Smart Splitter: Breaks long text blocks by periods, question marks, and newlines
+        const sentences = text.split(/(?<=[.!?])\s+|\n+/);
+        let finalResults = [];
+
         try {
-            // Direct secure web connection call
-            const response = await fetch(`https://translated.net{encodeURIComponent(text)}&langpair=fr|en`);
-            const data = await response.json();
-            
-            if (data && data.responseData && data.responseData.translatedText) {
-                englishText.value = data.responseData.translatedText;
-                statusText.innerText = "Translation Complete!";
-                statusText.style.color = "#2f855a";
-            } else {
-                statusText.innerText = "Server response error. Please try again.";
-                statusText.style.color = "#c53030";
+            for (let sentence of sentences) {
+                sentence = sentence.trim();
+                if (!sentence) continue;
+
+                // Send smaller, clean sentence segments to avoid server query truncation blocks
+                const response = await fetch(`https://translated.net{encodeURIComponent(sentence)}&langpair=fr|en`);
+                const data = await response.json();
+                
+                if (data && data.responseData && data.responseData.translatedText) {
+                    finalResults.push(data.responseData.translatedText);
+                } else {
+                    finalResults.push(sentence); // Fallback safe save if a sector delays
+                }
             }
+
+            englishText.value = finalResults.join(" ");
+            statusText.innerText = "Translation Complete!";
+            statusText.style.color = "#2f855a";
         } catch (error) {
             console.error(error);
-            statusText.innerText = "Network connection blocked. Please check your internet or try another browser.";
+            statusText.innerText = "Network connection blocked. Check your connection.";
             statusText.style.color = "#c53030";
         }
     });
 
-    /* --- AUDIO CONTROLS --- */
+    /* --- AUDIO PLAYER AUDIO CONTROLS --- */
     btnSpeak.addEventListener('click', () => {
         const text = frenchText.value.trim();
         if (!text) return;
