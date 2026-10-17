@@ -77,6 +77,7 @@
         
         statusText.innerText = "Translating...";
         statusText.style.color = "#2f855a";
+        englishText.value = "";
         
         const priorScript = document.getElementById('engine-call');
         if (priorScript) priorScript.remove();
@@ -84,13 +85,13 @@
         const script = document.createElement('script');
         script.id = 'engine-call';
         
-        // This direct JSONP data unpacking logic acts like an unblockable receiver hook
+        // Exact processing wrapper to cleanly target text fragments
         window.googleTranslateCallback = function(data) {
             try {
                 if (data && data[0]) {
                     let completeTranslation = "";
                     
-                    // Loops natively inside the target data sub-layers to extract pure text blocks
+                    // Loops securely across the exact sentence array data blocks returned by the API
                     for (let i = 0; i < data[0].length; i++) {
                         if (data[0][i] && data[0][i][0]) {
                             completeTranslation += data[0][i][0];
@@ -101,27 +102,27 @@
                         englishText.value = completeTranslation;
                         statusText.innerText = "Translation Complete!";
                     } else {
-                        statusText.innerText = "Error pulling raw text data arrays.";
+                        statusText.innerText = "Data pattern extract error.";
                         statusText.style.color = "#c53030";
                     }
                 } else {
-                    statusText.innerText = "Data container structure missing.";
+                    statusText.innerText = "Response structural mismatch.";
                     statusText.style.color = "#c53030";
                 }
             } catch (err) {
                 console.error(err);
-                statusText.innerText = "Processing error in browser engine execution.";
+                statusText.innerText = "Processing error in text parsing.";
                 statusText.style.color = "#c53030";
             }
             script.remove();
         };
 
-        // Secure endpoint parameters explicitly mapping arrays back into pure strings
+        // Secure formatting endpoint calling Google Translation servers
         script.src = `https://googleapis.com{encodeURIComponent(text)}&callback=googleTranslateCallback`;
         document.body.appendChild(script);
     });
 
-    /* --- AUDIO CONTROLS --- */
+    /* --- AUDIO PRONUNCIATION CONTROLS --- */
     btnSpeak.addEventListener('click', () => {
         const text = frenchText.value.trim();
         if (!text) return;
